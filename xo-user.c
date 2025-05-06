@@ -82,6 +82,30 @@ static void listen_keyboard_handler(void)
     close(attr_fd);
 }
 
+static int draw_board_user(const char *table)
+{
+    int k = 0;
+    printf("\n\n");
+
+    while (k < N_GRIDS) {
+        // 畫出一列格子
+        for (int j = 0; j < (BOARD_SIZE << 1) - 1 && k < N_GRIDS; j++) {
+            printf("%c", (j & 1) ? '|' : table[k++]);
+        }
+        printf("\n");
+
+        // 畫出分隔線
+        for (int j = 0; j < (BOARD_SIZE << 1) - 1; j++) {
+            printf("-");
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
+
+
+
 int main(int argc, char *argv[])
 {
     if (!status_check())
@@ -119,6 +143,7 @@ int main(int argc, char *argv[])
             read(device_fd, display_buf, DRAWBUFFER_SIZE);
             display_buf[DRAWBUFFER_SIZE - 1] = '\0';
             printf("%s", display_buf);
+            draw_board_user(display_buf);
         }
     }
 

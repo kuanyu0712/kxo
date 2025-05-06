@@ -121,28 +121,11 @@ static char table[N_GRIDS];
 /* Draw the board into draw_buffer */
 static int draw_board(char *table)
 {
-    int i = 0, k = 0;
-    draw_buffer[i++] = '\n';
-    smp_wmb();
-    draw_buffer[i++] = '\n';
-    smp_wmb();
-
-    while (i < DRAWBUFFER_SIZE) {
-        for (int j = 0; j < (BOARD_SIZE << 1) - 1 && k < N_GRIDS; j++) {
-            draw_buffer[i++] = j & 1 ? '|' : table[k++];
-            smp_wmb();
-        }
-        draw_buffer[i++] = '\n';
-        smp_wmb();
-        for (int j = 0; j < (BOARD_SIZE << 1) - 1; j++) {
-            draw_buffer[i++] = '-';
-            smp_wmb();
-        }
-        draw_buffer[i++] = '\n';
-        smp_wmb();
+    for (int i = 0; i < N_GRIDS; i++) {
+        draw_buffer[i] = table[i];
+        smp_wmb();  // 強制 CPU
+                    // 確保在這之前的所有寫入都完成，才可以繼續後面的操作(保證寫入順序一致)
     }
-
-
     return 0;
 }
 
@@ -436,8 +419,9 @@ static int kxo_release(struct inode *inode, struct file *filp)
         fast_buf_clear();
     }
     pr_info("release, current cnt: %d\n", atomic_read(&open_cnt));
+    pr_info("kxo: DRAWBUFFER_SIZE = %d, N_GRIDS = %d\n", DRAWBUFFER_SIZE,
+            N_GRIDS);
     attr_obj.end = 48;
-
     return 0;
 }
 
